@@ -1,5 +1,29 @@
-const fs = require("fs");
-const router = require('express').Router();
+const PORT = process.env.port || 3001;
+const express = require('express');
+const app = express();
+const path = require('path');
+const fs = require("fs")
+// const dbData = require('./db/db.json');
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
+
+// app.get('/api/notes', (req,res) => {
+//     // res.json(notesArray.slice(1));
+//   });
+
+app.get('/', (req, res) =>
+    res.sendFile(path.join(__dirname, '/public/index.html'))
+);
+
+app.get('/notes', (req, res) =>
+    res.sendFile(path.join(__dirname, '/public/notes.html'))
+);
+
+app.get('*', (req, res) =>
+    res.sendFile(path.join(__dirname, '/public/index.html'))
+);
 
 // function createNewNote (body, notesArray) {
 //     const newNote = body;
@@ -12,23 +36,62 @@ const router = require('express').Router();
 //           notesArray[0]++;
   
 //           notesArray.push(newNote);
-//             fs.writeFileSync(path.join(__dirname, './db/db.json'), JSON.stringify(notesArray, null, 2)
+//             fs.writeFileSync(path.join(__dirname, '.db/db.json'), JSON.stringify(notesArray, null, 2)
 //           );
 //             return newNote;
 //   }
 
-router.get ('/notes', (req, res) => {
-  var store = require('../db/db.json');
-  res.json(store);
-});
+// activity 17 
+app.post('/api/notes', (req,res) => {
+    // const newNote = createNewNote(req.body, notesArray);
+    // res.json(newNote);
+    // Log that a POST request was received
+    console.info(`${req.method} request received to add a note`);
+    
+    // Destructuring assignment for the items in req.body
+    const { title, text } = req.body;
+    
+    // If all the required properties are present
+    if (title && text) {
+        // Variable for the object we will save
+        // key & value - you can just write one word if it's the same.
+        const userNote = {
+            title,
+            text
+        };
+    //   activity 20
+// Obtain existing reviews
+        fs.readFile('./db/db.json', 'utf8', (err, data) => {
+            if (err) {
+                console.error(err);
+            } else {
+                // Convert string into JSON object
+                const parsedNotes = JSON.parse(data);
 
-router.post('/notes', (req,res) => { 
-  var store = require('../db/db.json');
-  store.push(req.body);
-  fs.writeFile ('./db/db.json', JSON.stringify(store), err => {
-    if (err) throw err;
-  });
-  res.json(store);
-});
+                // Add a new review
+                parsedNotes.push(userNote);
 
-module.exports = router;
+                // Write updated reviews back to the file
+                fs.writeFile('./db/db.json',JSON.stringify(parsedNotes, null, 2),
+                (writeErr) =>
+                    writeErr
+                    ? console.error(writeErr)
+                    : console.info('Successfully updated !')
+                );
+            }
+        });
+
+    //         fs.writeFileSync(path.join(__dirname, '.db/db.json'), JSON.stringify(notesArray, null, 2)
+    // );
+
+        const response = {
+            status: 'success',
+            body: userNote,
+        };
+        
+        console.log(response);
+        res.status(201).json(response);
+        } else {
+        res.status(500).json('Error in posting review');
+        }
+});
