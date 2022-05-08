@@ -12,6 +12,13 @@ app.use(express.static('public'));
 // app.get('/api/notes', (req,res) => {
 //     // res.json(notesArray.slice(1));
 //   });
+ 
+// tells get route to get all notes saved in db.json and save in obj
+app.get('/api/notes', (req, res) => {
+  const readFile = fs.readFileSync('./db/db.json', 'utf8');
+  const notes = JSON.parse(readFile);
+  res.json(notes);
+});
 
 app.get('/', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/index.html'))
@@ -25,6 +32,7 @@ app.get('*', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/index.html'))
 );
 
+// Tried going this option but it end up being scrapped
 // function createNewNote (body, notesArray) {
 //     const newNote = body;
 //     if(!Array.isArray(notesArray))
@@ -41,7 +49,7 @@ app.get('*', (req, res) =>
 //             return newNote;
 //   }
 
-// activity 17 
+// Acitivity 17
 app.post('/api/notes', (req,res) => {
     // const newNote = createNewNote(req.body, notesArray);
     // res.json(newNote);
@@ -59,7 +67,7 @@ app.post('/api/notes', (req,res) => {
             title,
             text
         };
-    //   activity 20
+    // Activity 20
 // Obtain existing reviews
         fs.readFile('./db/db.json', 'utf8', (err, data) => {
             if (err) {
